@@ -1988,6 +1988,12 @@ public final class Settings {
         public static final String INCREASING_RING_INTERVAL = "increasing_ring_interval";
 
         /**
+         * Enable/Disable Safe Headset Volume
+         * @hide
+         **/
+        public static final String SAFE_HEADSET_VOLUME = "safe_headset_volume";
+
+        /**
          * Master volume (float in the range 0.0f to 1.0f).
          * @hide
          */
