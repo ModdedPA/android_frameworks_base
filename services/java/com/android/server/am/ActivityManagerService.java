@@ -12791,27 +12791,26 @@ Log.e("XPLOD", "Config not null, doing relayout of " + r);
             // And we need to make sure at this point that all other activities
             // are made visible with the correct configuration.
             mMainStack.ensureActivitiesVisibleLocked(starting, changes);
-			
-			if (mWindowManager.isTaskSplitView(starting.task.taskId)) {
-Log.e("XPLOD", "Split view restoring task " + starting.task.taskId + " -- " + mIgnoreSplitViewUpdate.size());
-starting = mMainStack.topRunningActivityLocked(starting);
-if (mWindowManager.isTaskSplitView(starting.task.taskId)) {
-Log.e("XPLOD", "Split view restoring also task " + starting.task.taskId);
-            mMainStack.ensureActivityConfigurationLocked(starting, changes);
-            // And we need to make sure at this point that all other activities
-            // are made visible with the correct configuration.
-            mMainStack.ensureActivitiesVisibleLocked(starting, changes);
-if (mIgnoreSplitViewUpdate.contains(starting.task.taskId)) { mIgnoreSplitViewUpdate.remove((Integer) starting.task.taskId); } else {
-            mMainStack.moveTaskToFrontLocked(starting.task, null, null);
- mMainStack.resumeTopActivityLocked(null);
-mIgnoreSplitViewUpdate.add(starting.task.taskId);
-/*            starting = mMainStack.topRunningActivityLocked(null);
-            mMainStack.moveTaskToFrontLocked(starting.task, null, null);
- mMainStack.resumeTopActivityLocked(null);
-mIgnoreSplitViewUpdate.add(starting.task.taskId);*/
-}
-}
-			}
+
+            if (mWindowManager.isTaskSplitView(starting.task.taskId)) {
+                Log.e("XPLOD", "Split view restoring task " + starting.task.taskId + " -- " + mIgnoreSplitViewUpdate.size());
+                ActivityRecord second = mMainStack.topRunningActivityLocked(starting);
+                if (mWindowManager.isTaskSplitView(second.task.taskId)) {
+                    Log.e("XPLOD", "Split view restoring also task " + second.task.taskId);
+                    kept = kept && mMainStack.ensureActivityConfigurationLocked(second, changes);
+                    mMainStack.ensureActivitiesVisibleLocked(second, changes);
+                    if (mIgnoreSplitViewUpdate.contains(starting.task.taskId)) {
+                        Log.e("XPLOD", "Task "+ starting.task.taskId + " resuming ignored");
+                        mIgnoreSplitViewUpdate.removeAll(Collections.singleton((Integer) starting.task.taskId));
+                    } else {
+                        mMainStack.moveTaskToFrontLocked(second.task, null, null);
+                        mIgnoreSplitViewUpdate.add(starting.task.taskId);
+                        mIgnoreSplitViewUpdate.add(second.task.taskId);
+                        mMainStack.resumeTopActivityLocked(null);
+                        mMainStack.moveTaskToFrontLocked(starting.task, null, null);
+                    }
+                }
+            }
         }
         
         if (values != null && mWindowManager != null) {

@@ -997,9 +997,9 @@ public class InputMethodService extends AbstractInputMethodService {
         }
         return true;
     }
-
+    
     public boolean onEvaluateSplitView() {
-	if (mCandidatesFrame.getChildCount() > 0) {
+        if (mCandidatesFrame.getChildCount() > 0) {
             Context candidateContext = mCandidatesFrame.getChildAt(0).getContext();
             if (candidateContext instanceof Activity) {
                 return ((Activity) candidateContext).isSplitView();

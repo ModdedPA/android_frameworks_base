@@ -69,9 +69,9 @@ import android.view.ActionMode;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.ContextThemeWrapper;
+import android.view.Display;
 import android.view.Gravity;
 import android.view.IWindowManager;
-import android.view.Display;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -2438,6 +2438,14 @@ public class Activity extends ContextThemeWrapper
         if (ev.getAction() == MotionEvent.ACTION_DOWN){
           onUserInteraction();
 	}
+        if (mIsSplitView) {
+            IWindowManager wm = (IWindowManager) WindowManagerGlobal.getWindowManagerService();
+            try {
+                wm.notifyActivityTouched(mToken, false);
+            } catch (RemoteException e) {
+                Log.e(TAG, "Cannot notify activity touched", e);
+            }
+        }
         if (mIsSplitView) {
             IWindowManager wm = (IWindowManager) WindowManagerGlobal.getWindowManagerService();
             try {
@@ -5158,6 +5166,7 @@ public class Activity extends ContextThemeWrapper
             mWindow = PolicyManager.makeNewWindow(this);
         }
 
+        mWindow = PolicyManager.makeNewWindow(this);
         mWindow.setCallback(this);
         mWindow.getLayoutInflater().setPrivateFactory(this);
         if (info.softInputMode != WindowManager.LayoutParams.SOFT_INPUT_STATE_UNSPECIFIED) {
@@ -5191,9 +5200,9 @@ public class Activity extends ContextThemeWrapper
         mWindowManager = mWindow.getWindowManager();
         mCurrentConfig = config;
 
-	if ((intent.getFlags() & Intent.FLAG_ACTIVITY_SPLIT_VIEW) != 0) {
+	    if ((intent.getFlags() & Intent.FLAG_ACTIVITY_SPLIT_VIEW) != 0) {
             final IWindowManager wm = (IWindowManager) WindowManagerGlobal.getWindowManagerService();
-	    updateSplitViewMetrics(true);
+	        updateSplitViewMetrics(true);
         }
     }
 
@@ -5241,12 +5250,11 @@ public class Activity extends ContextThemeWrapper
     /** @hide */
     final void updateSplitViewMetrics(boolean shouldReset) {
         if (mParent != null) {
-            // Also update the parent activities, don't let the windows hanging 
+            // Also update the parent activities, don't let the windows hanging
             mParent.updateSplitViewMetrics(shouldReset);
         }
         
         final IWindowManager wm = (IWindowManager) WindowManagerGlobal.getWindowManagerService();
-			
         try {
             mIsSplitView = false;
 
@@ -5254,19 +5262,18 @@ public class Activity extends ContextThemeWrapper
                 wm.getSplitViewRect(getTaskId(), true);
             }
 
-            // Check for split view settings 
+            // Check for split view settings
             if (wm.isTaskSplitView(getTaskId())) {
-                // This activity/task is tagged as being in split view 
+                // This activity/task is tagged as being in split view
                 mIsSplitView = true;
 
                 wm.setTaskChildSplit(mToken, true);
-
-                // Then, we apply it the position and size 
+                // Then, we apply it the position and size
                 mWindow.setGravity(Gravity.LEFT | Gravity.TOP);
 
                 WindowManager.LayoutParams params = mWindow.getAttributes();
 
-                // We save the original window size, in case we want to restore it later 
+                // We save the original window size, in case we want to restore it later
                 if (mOriginalBounds == null) {
                     mOriginalBounds = new Rect();
                     mOriginalBounds.left = params.x;
@@ -5275,9 +5282,8 @@ public class Activity extends ContextThemeWrapper
                     mOriginalBounds.bottom = params.y + params.height;
                 }
                 
-                /*try {	
-                    wm.setSplitViewRect(mOriginalBounds.left, mOriginalBounds.top, mOriginalBounds.r
-ight, mOriginalBounds.bottom);
+                /*try {
+                    wm.setSplitViewRect(mOriginalBounds.left, mOriginalBounds.top, mOriginalBounds.right, mOriginalBounds.bottom);
                 } catch (RemoteException e) {
                     Log.e(TAG, "Could not update split view rect", e);
                 }*/
@@ -5294,16 +5300,15 @@ ight, mOriginalBounds.bottom);
                 mWindow.addFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL);
                 mWindow.addFlags(WindowManager.LayoutParams.FLAG_SPLIT_TOUCH);
 
-                // We notify that we are touched -- but really it's just so that this activity
-                // which just opened has the focus without the need to touch it 
+                // We notify that we are touched -- but really it's just so that this activit
+                // which just opened has the focus without the need to touch it
                 wm.notifyActivityTouched(mToken, true);
             } else if (mOriginalBounds != null) {
-                // Restore normal window bounds 
+                // Restore normal window bounds
                 Log.d(TAG, "Restore original bounds from split (TaskId=" + getTaskId() + ")");
                 WindowManager.LayoutParams params = mWindow.getAttributes();
                 params.x = mOriginalBounds.left;
-                params.y = mOriginalBounds.top;	
-
+                params.y = mOriginalBounds.top;
                 mWindow.setLayout(mOriginalBounds.right - mOriginalBounds.left,
                     mOriginalBounds.bottom - mOriginalBounds.top);
 
