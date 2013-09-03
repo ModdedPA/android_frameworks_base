@@ -2798,6 +2798,27 @@ public final class ActivityManagerService  extends ActivityManagerNative
                     mMainStack.resumeTopActivityLocked(null);
                 }
             }
+Log.e("XPLOD", "setRequestedOrientation");
+if (mWindowManager.isTaskSplitView(r.task.taskId)) {
+Log.e("XPLOD", "That first task is split, checking second");
+// xplod
+ActivityRecord starting = mMainStack.topRunningActivityLocked(r);
+if (mWindowManager.isTaskSplitView(starting.task.taskId)) {
+Log.e("XPLOD", "Second task is split as well, notifying orientation change");
+r = starting;
+            mWindowManager.setAppOrientation(r.appToken, requestedOrientation);
+            config = mWindowManager.updateOrientationFromAppTokens(
+                    mConfiguration,
+                    r.mayFreezeScreenLocked(r.app) ? r.appToken : null);
+            if (config != null) {
+                r.frozenBeforeDestroy = true;
+                //if (!updateConfigurationLocked(config, r, false, false)) {
+                    mMainStack.resumeTopActivityLocked(null);
+                //}
+Log.e("XPLOD", "Config not null, doing relayout of " + r);
+            } else { Log.e("XPLOD", "Config is null!"); }
+}
+}
             Binder.restoreCallingIdentity(origId);
         }
     }
@@ -6248,6 +6269,29 @@ public final class ActivityManagerService  extends ActivityManagerNative
         }
 
         return -1;
+    }
+
+    public IBinder getActivityForTask(int task, boolean onlyRoot) {
+        synchronized(this) {
+            return getActivityForTaskLocked(task, onlyRoot);
+        }
+    }
+
+    IBinder getActivityForTaskLocked(int task, boolean onlyRoot) {
+        final int N = mMainStack.mHistory.size();
+        TaskRecord lastTask = null;
+        for (int i=0; i<N; i++) {
+            ActivityRecord r = (ActivityRecord)mMainStack.mHistory.get(i);
+            if (r.task.taskId == task) {
+                if (!onlyRoot || lastTask != r.task) {
+                    return r.appToken;
+                }
+                return null;
+            }
+            lastTask = r.task;
+        }
+
+        return null;
     }
 
     // =========================================================
@@ -12734,7 +12778,7 @@ public final class ActivityManagerService  extends ActivityManagerNative
                 }
             }
         }
-        
+
         if (changes != 0 && starting == null) {
             // If the configuration changed, and the caller is not already
             // in the process of starting an activity, then find the top
@@ -12747,6 +12791,27 @@ public final class ActivityManagerService  extends ActivityManagerNative
             // And we need to make sure at this point that all other activities
             // are made visible with the correct configuration.
             mMainStack.ensureActivitiesVisibleLocked(starting, changes);
+			
+			if (mWindowManager.isTaskSplitView(starting.task.taskId)) {
+Log.e("XPLOD", "Split view restoring task " + starting.task.taskId + " -- " + mIgnoreSplitViewUpdate.size());
+starting = mMainStack.topRunningActivityLocked(starting);
+if (mWindowManager.isTaskSplitView(starting.task.taskId)) {
+Log.e("XPLOD", "Split view restoring also task " + starting.task.taskId);
+            mMainStack.ensureActivityConfigurationLocked(starting, changes);
+            // And we need to make sure at this point that all other activities
+            // are made visible with the correct configuration.
+            mMainStack.ensureActivitiesVisibleLocked(starting, changes);
+if (mIgnoreSplitViewUpdate.contains(starting.task.taskId)) { mIgnoreSplitViewUpdate.remove((Integer) starting.task.taskId); } else {
+            mMainStack.moveTaskToFrontLocked(starting.task, null, null);
+ mMainStack.resumeTopActivityLocked(null);
+mIgnoreSplitViewUpdate.add(starting.task.taskId);
+/*            starting = mMainStack.topRunningActivityLocked(null);
+            mMainStack.moveTaskToFrontLocked(starting.task, null, null);
+ mMainStack.resumeTopActivityLocked(null);
+mIgnoreSplitViewUpdate.add(starting.task.taskId);*/
+}
+}
+			}
         }
         
         if (values != null && mWindowManager != null) {
@@ -12755,6 +12820,8 @@ public final class ActivityManagerService  extends ActivityManagerNative
         
         return kept;
     }
+
+private ArrayList<Integer> mIgnoreSplitViewUpdate = new ArrayList<Integer>();
 
     /**
      * Decide based on the configuration whether we should shouw the ANR,
