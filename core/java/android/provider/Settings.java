@@ -1852,6 +1852,9 @@ public final class Settings {
         @Deprecated
         public static final String ALWAYS_FINISH_ACTIVITIES = Global.ALWAYS_FINISH_ACTIVITIES;
 
+        /** @hide */
+        public static final String POWER_FADE_EFFECT = "power_fade_effect";
+
         /**
          * Determines which streams are affected by ringer mode changes. The
          * stream type's bit should be set to 1 if it should be muted when going
