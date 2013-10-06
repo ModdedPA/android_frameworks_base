@@ -3024,6 +3024,12 @@ public final class Settings {
          */
         public static final String QS_DYNAMIC_IME = "qs_dynamic_ime";
 
+       /**
+        * Show summary of traffic.
+        * @hide
+        */
+        public static final String STATUS_BAR_TRAFFIC_SUMMARY = "status_bar_traffic_summary";
+
         /**
          * Quick Settings Panel Dynamic Tiles
          *
