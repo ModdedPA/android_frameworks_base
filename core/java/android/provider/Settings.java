@@ -950,6 +950,7 @@ public final class Settings {
             MOVED_TO_SECURE.add(Secure.LOCK_PATTERN_ENABLED);
             MOVED_TO_SECURE.add(Secure.LOCK_PATTERN_VISIBLE);
             MOVED_TO_SECURE.add(Secure.LOCK_PATTERN_TACTILE_FEEDBACK_ENABLED);
+	    MOVED_TO_SECURE.add(Secure.LOCK_NUMPAD_RANDOM); 
             MOVED_TO_SECURE.add(Secure.LOGGING_ID);
             MOVED_TO_SECURE.add(Secure.PARENTAL_CONTROL_ENABLED);
             MOVED_TO_SECURE.add(Secure.PARENTAL_CONTROL_LAST_UPDATE);
@@ -4489,7 +4490,7 @@ public final class Settings {
         public static final String
                 LOCK_PATTERN_TACTILE_FEEDBACK_ENABLED = "lock_pattern_tactile_feedback_enabled";
 
-        /**
+       /**
          * This preference allows the device to be locked given time after screen goes off,
          * subject to current DeviceAdmin policy limits.
          * @hide
@@ -4539,6 +4540,25 @@ public final class Settings {
          */
         public static final String LOCK_SYNC_ENCRYPTION_PASSWORD =
             "lock_sync_encryption_password";
+
+  /**
+   * Whether the NumKeyPad will change the orders of numbers
+   * in a PIN locked lockscreen
+   * 0 = off | 1 = always | 2 = only on request
+   * @hide
+   */
+        public static final String LOCK_NUMPAD_RANDOM =
+            "lock_numpad_random";
+
+
+        /**
+         * The Logging ID (a unique 64-bit value) as a hex string.
+         * Used as a pseudonymous identifier for logging.
+         * @deprecated This identifier is poorly initialized and has
+         * many collisions.  It should not be used.
+         */
+        @Deprecated
+        public static final String LOGGING_ID = "logging_id";
 
         /**
          * The Logging ID (a unique 64-bit value) as a hex string.
