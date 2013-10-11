@@ -21,6 +21,7 @@ import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
@@ -33,6 +34,7 @@ import android.provider.Settings;
 import android.text.TextUtils;
 
 import static com.android.internal.util.cm.NavigationRingConstants.*;
+import com.android.internal.util.cm.TorchConstants;
 import com.android.internal.widget.multiwaveview.GlowPadView;
 import com.android.internal.widget.multiwaveview.TargetDrawable;
 
@@ -42,6 +44,9 @@ public class NavigationRingHelpers {
     public static final int MAX_ACTIONS = 3;
 
     private static final String ASSIST_ICON_METADATA_NAME = "com.android.systemui.action_assist_icon";
+
+    private static final IntentFilter TORCH_STATE_FILTER =
+            new IntentFilter(TorchConstants.ACTION_STATE_CHANGED);
 
     private NavigationRingHelpers() {
     }
@@ -88,13 +93,13 @@ public class NavigationRingHelpers {
 
     public static boolean isAssistantAvailable(Context context) {
         return ((SearchManager) context.getSystemService(Context.SEARCH_SERVICE))
-                .getAssistIntent(context, UserHandle.USER_CURRENT) != null;
+                .getAssistIntent(context, true, UserHandle.USER_CURRENT) != null;
     }
 
     public static boolean isTorchAvailable(Context context) {
         PackageManager pm = context.getPackageManager();
         try {
-            return pm.getPackageInfo("net.cactii.flash2", 0) != null;
+            return pm.getPackageInfo(TorchConstants.APP_PACKAGE_NAME, 0) != null;
         } catch (PackageManager.NameNotFoundException e) {
             // ignored, just catched so we can return false below
         }
@@ -122,7 +127,7 @@ public class NavigationRingHelpers {
         } else if (action.equals(ACTION_POWER)) {
             resourceId = com.android.internal.R.drawable.ic_navigation_ring_power;
         } else if (action.equals(ACTION_TORCH)) {
-            resourceId = com.android.internal.R.drawable.ic_navigation_ring_torch;
+            resourceId = getTorchDrawableResId(context);
         } else if (action.equals(ACTION_ASSIST)) {
             resourceId = com.android.internal.R.drawable.ic_action_assist_generic;
         }
@@ -134,27 +139,14 @@ public class NavigationRingHelpers {
                 PackageManager pm = context.getPackageManager();
                 ActivityInfo info = intent.resolveActivityInfo(pm, PackageManager.GET_ACTIVITIES);
 
-                Drawable activityIcon = info.loadIcon(pm);
-                Drawable iconBg = res.getDrawable(
-                        com.android.internal.R.drawable.ic_navigation_ring_blank_normal);
-                Drawable iconBgActivated = res.getDrawable(
-                        com.android.internal.R.drawable.ic_navigation_ring_blank_activated);
-
-                int margin = (int)(iconBg.getIntrinsicHeight() / 3);
-                LayerDrawable icon = new LayerDrawable (new Drawable[] { iconBg, activityIcon });
-                LayerDrawable iconActivated = new LayerDrawable (new Drawable[] { iconBgActivated, activityIcon });
-
-                icon.setLayerInset(1, margin, margin, margin, margin);
-                iconActivated.setLayerInset(1, margin, margin, margin, margin);
-
-                StateListDrawable selector = new StateListDrawable();
-                selector.addState(TargetDrawable.STATE_INACTIVE, icon);
-                selector.addState(TargetDrawable.STATE_ACTIVE, iconActivated);
-                selector.addState(TargetDrawable.STATE_FOCUSED, iconActivated);
-                return new TargetDrawable(res, selector);
+                if (info != null) {
+                    return createDrawableForActivity(res, info.loadIcon(pm));
+                }
             } catch (URISyntaxException e) {
-                resourceId = com.android.internal.R.drawable.ic_navigation_ring_empty;
+                // treat as empty
             }
+
+            resourceId = com.android.internal.R.drawable.ic_navigation_ring_empty;
         }
 
         TargetDrawable drawable = new TargetDrawable(res, resourceId);
@@ -162,6 +154,27 @@ public class NavigationRingHelpers {
             drawable.setEnabled(false);
         }
         return drawable;
+    }
+
+    private static TargetDrawable createDrawableForActivity(Resources res, Drawable activityIcon) {
+        Drawable iconBg = res.getDrawable(
+                com.android.internal.R.drawable.ic_navigation_ring_blank_normal);
+        Drawable iconBgActivated = res.getDrawable(
+                com.android.internal.R.drawable.ic_navigation_ring_blank_activated);
+
+        int margin = (int)(iconBg.getIntrinsicHeight() / 3);
+        LayerDrawable icon = new LayerDrawable (new Drawable[] { iconBg, activityIcon });
+        LayerDrawable iconActivated = new LayerDrawable (new Drawable[] { iconBgActivated, activityIcon });
+
+        icon.setLayerInset(1, margin, margin, margin, margin);
+        iconActivated.setLayerInset(1, margin, margin, margin, margin);
+
+        StateListDrawable selector = new StateListDrawable();
+        selector.addState(TargetDrawable.STATE_INACTIVE, icon);
+        selector.addState(TargetDrawable.STATE_ACTIVE, iconActivated);
+        selector.addState(TargetDrawable.STATE_FOCUSED, iconActivated);
+
+        return new TargetDrawable(res, selector);
     }
 
     private static int getVibrateDrawableResId(Context context) {
@@ -195,7 +208,18 @@ public class NavigationRingHelpers {
         }
     }
 
-    public static void updateRingerIconIfNeeded(Context context,
+    private static int getTorchDrawableResId(Context context) {
+        Intent stateIntent = context.registerReceiver(null, TORCH_STATE_FILTER);
+        boolean active = stateIntent != null
+                && stateIntent.getIntExtra(TorchConstants.EXTRA_CURRENT_STATE, 0) != 0;
+
+        if (active) {
+            return com.android.internal.R.drawable.ic_navigation_ring_torch_on;
+        }
+        return com.android.internal.R.drawable.ic_navigation_ring_torch_off;
+    }
+
+    public static void updateDynamicIconIfNeeded(Context context,
             GlowPadView view, String action, int position) {
         int resourceId = -1;
 
@@ -205,6 +229,8 @@ public class NavigationRingHelpers {
             resourceId = getSilentDrawableResId(context);
         } else if (TextUtils.equals(action, ACTION_RING_SILENT_VIBRATE)) {
             resourceId = getRingerDrawableResId(context);
+        } else if (TextUtils.equals(action, ACTION_TORCH)) {
+            resourceId = getTorchDrawableResId(context);
         }
 
         if (resourceId > 0) {
@@ -215,7 +241,7 @@ public class NavigationRingHelpers {
 
     public static void swapSearchIconIfNeeded(Context context, GlowPadView view) {
         Intent intent = ((SearchManager) context.getSystemService(Context.SEARCH_SERVICE))
-                .getAssistIntent(context, UserHandle.USER_CURRENT);
+                .getAssistIntent(context, true, UserHandle.USER_CURRENT);
         if (intent != null) {
             ComponentName component = intent.getComponent();
             if (component != null) {
