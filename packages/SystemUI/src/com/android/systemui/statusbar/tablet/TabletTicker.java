@@ -108,6 +108,7 @@ public class TabletTicker
 
         if (isDisabled() && notification.getNotification().tickerText != null) {
             mEvent.updateTicker(notification, notification.getNotification().tickerText.toString());
+            //return;
         }
 
         // If it's already in here, remove whatever's in there and put the new one at the end.
@@ -131,6 +132,10 @@ public class TabletTicker
     }
 
     public void remove(IBinder key, boolean advance) {
+        //if (isDisabled()) {
+        //    mEvent.updateTicker(null);
+        //    return; 
+        //}
         if (mCurrentKey == key) {
             // Showing now
             if (advance) {
@@ -157,6 +162,7 @@ public class TabletTicker
     }
 
     public void halt() {
+        //if (isDisabled()) return;
         removeMessages(MSG_ADVANCE);
         if (mCurrentView != null || mQueuePos != 0) {
             for (int i=0; i<QUEUE_LENGTH; i++) {
@@ -182,6 +188,7 @@ public class TabletTicker
     }
 
     private void advance() {
+        //if (isDisabled()) return;
         // Out with the old...
         if (mCurrentView != null) {
             if (mWindow != null) {
