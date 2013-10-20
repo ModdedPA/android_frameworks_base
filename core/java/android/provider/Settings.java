@@ -1988,6 +1988,12 @@ public final class Settings {
         public static final String INCREASING_RING_INTERVAL = "increasing_ring_interval";
 
         /**
+         * Enable/Disable Safe Headset Volume
+         * @hide
+         **/
+        public static final String SAFE_HEADSET_VOLUME = "safe_headset_volume";
+
+        /**
          * Master volume (float in the range 0.0f to 1.0f).
          * @hide
          */
@@ -2631,6 +2637,18 @@ public final class Settings {
          */
         public static final String FOREGROUND_APP = "foreground_app";
 
+        /**
+         * Force showing status bar even in expanded desktop mode
+         * @hide
+         **/
+        public static final String FORCE_SHOW_STATUS_BAR = "force_show_status_bar";
+        
+        /**
+         * Indicates that notification/qs shade is opened
+         * @hide
+         */
+        public static final String NOTIFICATION_SHADE_ACTIVE = "notification_shade_active";
+        
         /**
          * Statusbar State
          * @hide
