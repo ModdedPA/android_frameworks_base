@@ -2566,19 +2566,6 @@ public final class Settings {
         public static final String HALO_HIDE = "halo_hide";
 
         /**
-         * HALO pause activities?, defaults to 0 (no, do not pause) on devices which isLargeRAM() == true
-         * otherwise it defaults to 1 (yes, do pause)
-         * @hide
-         */
-        public static final String HALO_PAUSE = "halo_pause";
-
-        /**
-         * HALO size fraction, default is 1.0f (normal)
-         * @hide
-         */
-        public static final String HALO_SIZE = "halo_size";
-
-        /**
          * HALO ninja?, should default to 0 (no, do not disappear when empty)
          * @hide
          */
@@ -2607,6 +2594,57 @@ public final class Settings {
          * @hide
          */
         public static final String HALO_UNLOCK_PING = "halo_unlock_ping";
+
+        /**
+         * HALO size fraction, default is 1.0f (normal)
+         * @hide
+         */
+        public static final String HALO_SIZE = "halo_size";
+
+        /**
+         * HALO pause activities?, defaults to 0 (no, do not pause) on devices which isLargeRAM() == true
+         * otherwise it defaults to 1 (yes, do pause)
+         * @hide
+         */
+        public static final String HALO_PAUSE = "halo_pause";
+
+        /**
+         * Enable custom HALO Colors
+         * @hide
+         **/
+        public static final String HALO_COLOR = "halo_color";
+
+        /**
+         * HALO Circle Color
+         * @hide
+         **/
+        public static final String HALO_CIRCLE_COLOR = "halo_circle_color";
+
+        /**
+         * HALO Effect Color
+         **/
+        public static final String HALO_EFFECT_COLOR = "halo_effect_color";
+        
+        /**
+         * HALO Notification Title Color
+         * @hide
+         **/
+        public static final String HALO_NOTIFICATION_TITLE_COLOR = "halo_notification_title_color";
+
+        /**
+         * HALO Notification Description Color
+         **/
+        public static final String HALO_NOTIFICATION_DESC_COLOR = "halo_notification_desc_color";
+        
+        /**
+         * HALO Speech Bubble Color
+         **/
+        public static final String HALO_SPEECH_BUBBLE_COLOR = "halo_speech_bubble_color";
+        
+        /**
+         * HALO Text Color
+         **/
+        public static final String HALO_TEXT_COLOR = "halo_text_color";
 
         /**
          * I am the lolrus.
