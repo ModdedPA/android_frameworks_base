@@ -2833,6 +2833,22 @@ public final class Settings {
         public static final String HALO_CIRCLE_COLOR = "halo_circle_color";
 
         /**
+         * HALO Effect Color
+         **/
+        public static final String HALO_EFFECT_COLOR = "halo_effect_color";
+        
+        /**
+         * HALO Notification Title Color
+         * @hide
+         **/
+        public static final String HALO_NOTIFICATION_TITLE_COLOR = "halo_notification_title_color";
+
+        /**
+         * HALO Notification Description Color
+         **/
+        public static final String HALO_NOTIFICATION_DESC_COLOR = "halo_notification_desc_color";
+
+        /**
          * Pie menu, should default to 1 (yes, show)
          * @hide
          */
