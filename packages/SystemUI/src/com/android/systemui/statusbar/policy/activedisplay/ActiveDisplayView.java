@@ -620,15 +620,7 @@ public class ActiveDisplayView extends FrameLayout {
         mBar.disable(0);
         cancelTimeoutTimer();
         unregisterSensorListener(mLightSensor);
-        /*
-         * Sometimes the homescreen was shown a short time when unlocking even with secure keyguard 
-         * so give it some time to prepare the lockscreen and everything
-        **/
-        mHandler.postDelayed(new Runnable(){
-        	public void run(){
-                setVisibility(View.GONE);
-        	}
-        }, 1000);
+        setVisibility(View.GONE);
     }
 
     private void handleShowNotification(boolean ping) {
