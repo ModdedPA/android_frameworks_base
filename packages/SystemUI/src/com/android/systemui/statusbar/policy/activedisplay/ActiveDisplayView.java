@@ -66,6 +66,7 @@ import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -74,7 +75,6 @@ import android.widget.RemoteViews;
 import com.android.internal.widget.multiwaveview.GlowPadView;
 import com.android.internal.widget.multiwaveview.GlowPadView.OnTriggerListener;
 import com.android.internal.widget.multiwaveview.TargetDrawable;
-
 import com.android.systemui.R;
 import com.android.systemui.statusbar.BaseStatusBar;
 import com.android.systemui.statusbar.tablet.TabletStatusBar;
@@ -143,8 +143,6 @@ public class ActiveDisplayView extends FrameLayout {
     private int mIconMargin;
     private int mIconPadding;
     private LinearLayout.LayoutParams mOverflowLayoutParams;
-    private KeyguardManager mKeyguardManager;
-    private KeyguardLock mKeyguardLock;
     private boolean mCallbacksRegistered = false;
 
     // user customizable settings
@@ -373,11 +371,10 @@ public class ActiveDisplayView extends FrameLayout {
         mIconMargin = getResources().getDimensionPixelSize(R.dimen.ad_notification_margin);
         mIconPadding = getResources().getDimensionPixelSize(R.dimen.overflow_icon_padding);
 
-        mKeyguardManager = (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
 
         mSettingsObserver = new SettingsObserver(new Handler());
         mCreationOrientation = Resources.getSystem().getConfiguration().orientation;
-        mInvertedPaint = makeInvertedPaint();
+        mInvertedPaint = makeInvertedPaint();     
     }
 
     private Paint makeInvertedPaint() {
@@ -450,6 +447,7 @@ public class ActiveDisplayView extends FrameLayout {
 
         mRemoteViewLayoutParams = getRemoteViewLayoutParams(orientation);
         mOverflowLayoutParams = getOverflowLayoutParams();
+        
         updateTargets();
         if (recreate) {
             updateTimeoutTimer();
@@ -595,10 +593,6 @@ public class ActiveDisplayView extends FrameLayout {
     }
 
     private void handleShowNotificationView() {
-        if (mKeyguardLock == null) {
-            mKeyguardLock = mKeyguardManager.newKeyguardLock("active_display");
-            mKeyguardLock.disableKeyguard();
-        }
         setVisibility(View.VISIBLE);
         // delay hiding system ui a bit because if the keyguard has not dismissed
         // yet it will end up changing the visibility which we don't want
@@ -612,10 +606,6 @@ public class ActiveDisplayView extends FrameLayout {
     }
 
     private void handleHideNotificationView() {
-        if (mKeyguardLock != null) {
-            mKeyguardLock.reenableKeyguard();
-            mKeyguardLock = null;
-        }
         restoreBrightness();
         mBar.disable(0);
         cancelTimeoutTimer();
