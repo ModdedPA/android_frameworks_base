@@ -4541,24 +4541,14 @@ public final class Settings {
         public static final String LOCK_SYNC_ENCRYPTION_PASSWORD =
             "lock_sync_encryption_password";
 
-  /**
-   * Whether the NumKeyPad will change the orders of numbers
-   * in a PIN locked lockscreen
-   * 0 = off | 1 = always | 2 = only on request
-   * @hide
-   */
+        /**
+         * Whether the NumKeyPad will change the orders of numbers
+         * in a PIN locked lockscreen
+         * 0 = off | 1 = always | 2 = only on request
+         * @hide
+         */
         public static final String LOCK_NUMPAD_RANDOM =
             "lock_numpad_random";
-
-
-        /**
-         * The Logging ID (a unique 64-bit value) as a hex string.
-         * Used as a pseudonymous identifier for logging.
-         * @deprecated This identifier is poorly initialized and has
-         * many collisions.  It should not be used.
-         */
-        @Deprecated
-        public static final String LOGGING_ID = "logging_id";
 
         /**
          * The Logging ID (a unique 64-bit value) as a hex string.
