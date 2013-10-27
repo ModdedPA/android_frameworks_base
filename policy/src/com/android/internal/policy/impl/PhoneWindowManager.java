@@ -5515,6 +5515,11 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         }
         return true;
     }
+    
+    @Override
+    public boolean isTopFullscreen(){
+    	return mTopIsFullscreen;
+    }
 
     @Override
     public void dump(String prefix, PrintWriter pw, String[] args) {

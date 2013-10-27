@@ -2771,6 +2771,11 @@ public final class Settings {
          * @hide
          */
         public static final String HALO_ACTIVE = "halo_active";
+        
+        /**
+         * Whether HALO should open windows in splitview or floating window
+         */
+        public static final String HALO_MULTI_WINDOW_MODE = "halo_multi_window_mode";
 
         /**
          * HALO reversed?, should default to 1 (yes, reverse)

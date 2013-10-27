@@ -294,6 +294,7 @@ interface IWindowManager
     Rect getSplitViewRect(int taskId, boolean resetLocation);
     void notifyActivityTouched(IBinder token, boolean force);
     void setSplitViewRect(int l, int t, int r, int b);
+    boolean isTopFullscreen();
 
     /** SPLIT VIEW END **/
 }

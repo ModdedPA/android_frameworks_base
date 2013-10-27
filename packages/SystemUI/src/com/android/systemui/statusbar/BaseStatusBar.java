@@ -1418,7 +1418,9 @@ public abstract class BaseStatusBar extends SystemUI implements
         public String mPkg;
         public String mTag;
         public int mId;
-        public boolean mFloat;
+        public boolean mMultiWindow;
+        private boolean mFloat;
+        private boolean mSplitView;
 
         NotificationClicker(PendingIntent intent, String pkg, String tag, int id) {
             mIntent = intent;
@@ -1427,8 +1429,8 @@ public abstract class BaseStatusBar extends SystemUI implements
             mId = id;
         }
 
-        public void makeFloating(boolean floating) {
-            mFloat = floating;
+        public void makeMultiWindow(boolean mw) {
+            mMultiWindow = mw;
         }
 
         public void onClick(View v) {
@@ -1446,7 +1448,32 @@ public abstract class BaseStatusBar extends SystemUI implements
             }
 
             if (mIntent != null) {
-
+        		mFloat = mSplitView = false;
+            	if(mMultiWindow){
+            		final int haloWindowMode = Settings.System.getInt(mContext.getContentResolver(),
+            				Settings.System.HALO_MULTI_WINDOW_MODE, 0);
+            		switch(haloWindowMode){
+            		case 0:
+            			mFloat = true;
+            			break;
+            		case 1:
+            			mSplitView = true;
+            			break;
+            		case 2:
+            			final IWindowManager wm = (IWindowManager) WindowManagerGlobal.getWindowManagerService();
+            			try {
+							if(wm.isTopFullscreen()){
+								mFloat = true;
+							} else {
+								mSplitView = true;
+							}
+						} catch (RemoteException e) {
+							e.printStackTrace();
+						}
+            			break;
+            		}
+            	}
+            	
                 if (mFloat && !"android".equals(mPkg)) {
                     Intent transparent = new Intent(mContext, com.android.systemui.Transparent.class);
                     transparent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_FLOATING_WINDOW);
@@ -1457,6 +1484,7 @@ public abstract class BaseStatusBar extends SystemUI implements
                 v.getLocationOnScreen(pos);
                 Intent overlay = new Intent();
                 if (mFloat) overlay.addFlags(Intent.FLAG_FLOATING_WINDOW | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                if (mSplitView) overlay.addFlags(Intent.FLAG_ACTIVITY_SPLIT_VIEW | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 overlay.setSourceBounds(
                         new Rect(pos[0], pos[1], pos[0]+v.getWidth(), pos[1]+v.getHeight()));
                 try {
@@ -1631,7 +1659,7 @@ public abstract class BaseStatusBar extends SystemUI implements
         if (contentIntent != null) {
             entry.floatingIntent = makeClicker(contentIntent,
                     notification.getPackageName(), notification.getTag(), notification.getId());
-            entry.floatingIntent.makeFloating(true);
+            entry.floatingIntent.makeMultiWindow(true);
         }
 
         // Construct the expanded view.
@@ -1779,7 +1807,7 @@ public abstract class BaseStatusBar extends SystemUI implements
                     oldEntry.content.setOnClickListener(listener);
                     oldEntry.floatingIntent = makeClicker(contentIntent,
                             notification.getPackageName(), notification.getTag(), notification.getId());
-                    oldEntry.floatingIntent.makeFloating(true);
+                    oldEntry.floatingIntent.makeMultiWindow(true);
                 } else {
                     oldEntry.content.setOnClickListener(null);
                     oldEntry.floatingIntent = null;

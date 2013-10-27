@@ -930,6 +930,8 @@ public interface WindowManagerPolicy {
      * Return whether the screen is fully turned on.
      */
     public boolean isScreenOnFully();
+    
+    public boolean isTopFullscreen();
 
     /**
      * Tell the policy that the lid switch has changed state.

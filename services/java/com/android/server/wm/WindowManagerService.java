@@ -4850,6 +4850,11 @@ public class WindowManagerService extends IWindowManager.Stub
     }
 
     @Override
+    public boolean isTopFullscreen() {
+    	return mPolicy.isTopFullscreen();
+    }
+    
+    @Override
     public boolean inKeyguardRestrictedInputMode() {
         return mPolicy.inKeyguardRestrictedKeyInputMode();
     }
