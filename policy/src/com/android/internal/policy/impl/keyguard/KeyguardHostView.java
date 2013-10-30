@@ -47,6 +47,7 @@ import android.os.UserHandle;
 import android.os.UserManager;
 import android.os.Vibrator;
 import android.provider.Settings;
+import android.renderscript.RenderScript;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.Slog;
@@ -468,7 +469,7 @@ public class KeyguardHostView extends KeyguardViewBase {
             }
         }
     }
-
+    
     private int getDisabledFeatures(DevicePolicyManager dpm) {
         int disabledFeatures = DevicePolicyManager.KEYGUARD_DISABLE_FEATURES_NONE;
         if (dpm != null) {

@@ -1900,13 +1900,6 @@ public final class Settings {
          */
         public static final String VIBRATE_ON = "vibrate_on";
 
-	/**
-         * How long to wait between playing notification sounds from a package
-         * Should be in milliseconds. 0 to disable
-         * @hide
-         */
-        public static final String MUTE_ANNOYING_NOTIFICATIONS_THRESHOLD = "mute_annoying_notifications_threshold";
-
        /**
         * NFC polling mode configuration key
         *
@@ -4556,10 +4549,10 @@ public final class Settings {
             "lock_numpad_random";
 
         /**
-         * The Logging ID (a unique 64-bit value) as a hex string.
+         * The Logging ID (a unique 64bit value) as a hex string.
          * Used as a pseudonymous identifier for logging.
          * @deprecated This identifier is poorly initialized and has
-         * many collisions.  It should not be used.
+         * many collisions. It should not be used.
          */
         @Deprecated
         public static final String LOGGING_ID = "logging_id";
