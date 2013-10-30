@@ -5158,7 +5158,6 @@ public class Activity extends ContextThemeWrapper
             mWindow = PolicyManager.makeNewWindow(this);
         }
 
-        mWindow = PolicyManager.makeNewWindow(this);
         mWindow.setCallback(this);
         mWindow.getLayoutInflater().setPrivateFactory(this);
         if (info.softInputMode != WindowManager.LayoutParams.SOFT_INPUT_STATE_UNSPECIFIED) {
