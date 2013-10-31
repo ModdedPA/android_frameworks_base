@@ -49,12 +49,6 @@ import android.os.UserHandle;
 import android.os.UserManager;
 import android.os.Vibrator;
 import android.provider.Settings;
-import android.renderscript.Allocation;
-import android.renderscript.Allocation.MipmapControl;
-import android.renderscript.Element;
-import android.renderscript.RenderScript;
-import android.renderscript.RenderScriptGL;
-import android.renderscript.ScriptIntrinsicBlur;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.Slog;
@@ -449,7 +443,7 @@ public class KeyguardHostView extends KeyguardViewBase {
             return true;
         }
     };
-    
+
     private int getDisabledFeatures(DevicePolicyManager dpm) {
         int disabledFeatures = DevicePolicyManager.KEYGUARD_DISABLE_FEATURES_NONE;
         if (dpm != null) {
