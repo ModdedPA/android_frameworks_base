@@ -618,7 +618,6 @@ final class DisplayPowerController {
                 	int percent = Integer.parseInt(ExtendedPropertiesUtils.getProperty(
                 			"com.android.systemui.navbar.dpi", "100"));
                 	navbarHeight = navbarHeight * percent / 100f;
-                	Slog.e(TAG, "NavBar: " + navbarHeight + " Percent: " + percent);
                     bmp = SurfaceControl.screenshot(mDisplayManager.getDisplayInfo(mDisplayManager.getDisplayIds()[0]).appWidth, mDisplayManager.getDisplayInfo(mDisplayManager.getDisplayIds()[0]).getNaturalHeight());
                     if(bmp != null) {
                    		Bitmap bmp2 = Bitmap.createBitmap(bmp, 0, 0, bmp.getWidth(), Math.round(bmp.getHeight() - navbarHeight));
