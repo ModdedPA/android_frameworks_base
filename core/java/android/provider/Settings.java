@@ -4544,10 +4544,10 @@ public final class Settings {
             "lock_numpad_random";
 
         /**
-         * The Logging ID (a unique 64bit value) as a hex string.
+         * The Logging ID (a unique 64-bit value) as a hex string.
          * Used as a pseudonymous identifier for logging.
          * @deprecated This identifier is poorly initialized and has
-         * many collisions. It should not be used.
+         * many collisions.  It should not be used.
          */
         @Deprecated
         public static final String LOGGING_ID = "logging_id";
