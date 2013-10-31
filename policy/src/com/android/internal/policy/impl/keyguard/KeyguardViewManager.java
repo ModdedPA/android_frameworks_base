@@ -17,6 +17,9 @@
 
 package com.android.internal.policy.impl.keyguard;
 
+import java.io.File;
+import java.io.FileOutputStream;
+
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.appwidget.AppWidgetManager;
@@ -25,16 +28,28 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.Bitmap.CompressFormat;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.BitmapFactory;
 import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Parcelable;
 import android.os.SystemProperties;
+import android.os.UserHandle;
 import android.provider.Settings;
+import android.renderscript.Allocation;
+import android.renderscript.Element;
+import android.renderscript.RenderScript;
+import android.renderscript.ScriptIntrinsicBlur;
+import android.renderscript.Allocation.MipmapControl;
 import android.util.ColorUtils;
 import android.util.ExtendedPropertiesUtils;
 import android.util.Log;
@@ -44,9 +59,13 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
 import android.view.ViewManager;
 import android.view.WindowManager;
+import android.view.SurfaceControl;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
+import android.widget.ImageView.ScaleType;
 
 import com.android.internal.R;
 import com.android.internal.util.cm.TorchConstants;
@@ -82,6 +101,10 @@ public class KeyguardViewManager {
 
     private String[] currentColors = new String[ExtendedPropertiesUtils.PARANOID_COLORS_COUNT];
     private String[] stockColors = new String[ExtendedPropertiesUtils.PARANOID_COLORS_COUNT];
+    
+    private boolean mBlurAndSeeThrough;
+    private boolean mBlurBackground;
+    private int mBlurRadius;
 
     public interface ShowListener {
         void onShown(IBinder windowToken);
@@ -90,16 +113,29 @@ public class KeyguardViewManager {
     class SettingsObserver extends ContentObserver {
         SettingsObserver(Handler handler) {
             super(handler);
+            onChange(true);
         }
 
         void observe() {
             ContentResolver resolver = mContext.getContentResolver();
             resolver.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.LOCKSCREEN_SEE_THROUGH), false, this);
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.LOCKSCREEN_BACKGROUND), false, this);
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.LOCKSCREEN_BLUR_BACKGROUND), false, this);
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.LOCKSCREEN_BLUR_RADIUS), false, this);
         }
 
         @Override
         public void onChange(boolean selfChange) {
+        	mBlurBackground = Settings.System.getInt(mContext.getContentResolver(), 
+            				Settings.System.LOCKSCREEN_BLUR_BACKGROUND, 0) == 1;
+        	mBlurAndSeeThrough = Settings.System.getInt(mContext.getContentResolver(), 
+            		Settings.System.LOCKSCREEN_SEE_THROUGH, 0) == 1 && mBlurBackground;
+        	mBlurRadius = Settings.System.getInt(mContext.getContentResolver(), 
+        			Settings.System.LOCKSCREEN_BLUR_RADIUS, 12);
             setKeyguardParams();
             // Update view if it has been shown atleast once, otherwise we'll
             // load our LayoutParams when attaching the view.
@@ -171,7 +207,7 @@ public class KeyguardViewManager {
 
         boolean enableScreenRotation = shouldEnableScreenRotation();
 
-        maybeCreateKeyguardLocked(enableScreenRotation, false, options);
+        maybeCreateKeyguardLocked(enableScreenRotation, mBlurAndSeeThrough, options);
         maybeEnableScreenRotation(enableScreenRotation);
 
         // Disable common aspects of the system/status/navigation bars that are not appropriate or
@@ -301,7 +337,7 @@ public class KeyguardViewManager {
         }
 
         if (mKeyguardHost == null) {
-            if (DEBUG) Log.d(TAG, "keyguard host is null, creating it...");
+            if(DEBUG) Slog.d(TAG, "keyguard host is null, creating it...");
 
             mKeyguardHost = new ViewManagerHost(mContext);
 
@@ -342,8 +378,9 @@ public class KeyguardViewManager {
             mViewManager.addView(mKeyguardHost, lp);
         }
 
-        if (force || mKeyguardView == null) {
-            inflateKeyguardView(options);
+        if (force || mKeyguardView == null) { 
+            inflateKeyguardView(options);       
+            setBackground(mKeyguardView);
             mKeyguardView.requestFocus();
         }
         updateUserActivityTimeoutInWindowLayoutParams();
@@ -388,7 +425,56 @@ public class KeyguardViewManager {
             }
         }
     }
+	    
+	private void setBackground(KeyguardHostView view) {
+	    String background = Settings.System.getStringForUser(mContext.getContentResolver(),
+	            Settings.System.LOCKSCREEN_BACKGROUND, UserHandle.USER_CURRENT);
+	    if(background != null || mBlurAndSeeThrough){
+		    if (background != null && !background.isEmpty()) {
+		        try {
+		            view.setBackgroundColor(Integer.parseInt(background));
+		        } catch(NumberFormatException e) {
+		            Log.e(TAG, "Invalid background color " + background);
+		        }
+		    } else {
+		        try {
+		            Context settingsContext = mContext.createPackageContext("com.android.settings", 0);
+		            String wallpaperFile;
+		            if(mBlurAndSeeThrough){
+		            	wallpaperFile = "/data/screen.png";
+		            } else {
+		            	wallpaperFile = settingsContext.getFilesDir() + "/lockwallpaper";
+		            }
+		            Bitmap backgroundBitmap = BitmapFactory.decodeFile(wallpaperFile);
+		            if(backgroundBitmap != null) {
+		            	if (mBlurBackground) backgroundBitmap = blurBitmap(backgroundBitmap, mBlurRadius);
+		            	view.setBackground(new BitmapDrawable(mContext.getResources(), backgroundBitmap));
+		            }
+		        } catch (NameNotFoundException e) {
+		        // Do nothing here
+		        }
+		    }
+	    }
+	}
 
+    private Bitmap blurBitmap (Bitmap bmp, int radius) {
+        //Bitmap bg = drawableToBitmap(getBackground());
+    	Bitmap out = Bitmap.createBitmap(bmp);
+        RenderScript rs = RenderScript.create(mContext);
+        
+        Allocation input = Allocation.createFromBitmap(rs, bmp, MipmapControl.MIPMAP_NONE, Allocation.USAGE_SCRIPT);
+        Allocation output = Allocation.createTyped(rs, input.getType());
+
+        ScriptIntrinsicBlur script = ScriptIntrinsicBlur.create(rs, Element.U8_4(rs));
+        script.setInput(input);
+        script.setRadius (radius);
+        script.forEach (output);
+
+        output.copyTo (out);
+
+        return out;
+    }
+	
     public void updateUserActivityTimeout() {
         updateUserActivityTimeoutInWindowLayoutParams();
         mViewManager.updateViewLayout(mKeyguardHost, mWindowLayoutParams);

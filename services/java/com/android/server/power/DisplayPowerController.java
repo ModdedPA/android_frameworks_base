@@ -23,10 +23,13 @@ import com.android.server.display.DisplayManagerService;
 
 import android.animation.Animator;
 import android.animation.ObjectAnimator;
+import android.app.KeyguardManager;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.database.ContentObserver;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.Bitmap.CompressFormat;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -42,11 +45,16 @@ import android.os.SystemClock;
 import android.os.UserHandle;
 import android.provider.Settings;
 import android.text.format.DateUtils;
+import android.util.ExtendedPropertiesUtils;
 import android.util.FloatMath;
 import android.util.Slog;
 import android.util.Spline;
 import android.util.TimeUtils;
+import android.view.SurfaceControl;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.PrintWriter;
 
 /**
@@ -202,6 +210,9 @@ final class DisplayPowerController {
 
     // The sensor manager.
     private final SensorManager mSensorManager;
+    
+    //The keyguard manager
+    private final KeyguardManager mKeyguardManager;
 
     // The proximity sensor, or null if not available or needed.
     private Sensor mProximitySensor;
@@ -347,6 +358,9 @@ final class DisplayPowerController {
     // True if the screen auto-brightness value is actually being used to
     // set the display brightness.
     private boolean mUsingScreenAutoBrightness;
+    
+    //Whether we have to make a screenshot when device goes off
+    private boolean mTakeScreenshot;
 
     // Animators.
     private ObjectAnimator mElectronBeamOnAnimator;
@@ -376,6 +390,7 @@ final class DisplayPowerController {
         mTwilight = twilight;
         mSensorManager = sensorManager;
         mDisplayManager = displayManager;
+        mKeyguardManager = (KeyguardManager)mContext.getSystemService(Context.KEYGUARD_SERVICE);
 
         final Resources resources = context.getResources();
 
@@ -391,38 +406,37 @@ final class DisplayPowerController {
 
         mUseSoftwareAutoBrightnessConfig = resources.getBoolean(
                 com.android.internal.R.bool.config_automatic_brightness_available);
-        if (mUseSoftwareAutoBrightnessConfig) {
-            final ContentResolver cr = mContext.getContentResolver();
-            final ContentObserver observer = new ContentObserver(mHandler) {
-                @Override
-                public void onChange(boolean selfChange, Uri uri) {
-                    mElectronBeamFadesConfig = Settings.System.getBoolean(mContext.getContentResolver(), 
-                            Settings.System.POWER_FADE_EFFECT, false);
-                    // As both LUX and BACKLIGHT might be changed at the same time, there's
-                    // a potential race condition. As the settings provider API doesn't give
-                    // us transactions to avoid them, wait a little until things settle down
-                    mHandler.removeMessages(MSG_UPDATE_BACKLIGHT_SETTINGS);
-                    mHandler.sendEmptyMessageDelayed(MSG_UPDATE_BACKLIGHT_SETTINGS, 1000);
-                }
-            };
+        final ContentResolver cr = mContext.getContentResolver();
 
+        final ContentObserver observer = new ContentObserver(mHandler) {
+            @Override
+            public void onChange(boolean selfChange, Uri uri) {
+            	updateSettings();
+            }
+        };
+        if (mUseSoftwareAutoBrightnessConfig) {
             cr.registerContentObserver(
                     Settings.System.getUriFor(Settings.System.AUTO_BRIGHTNESS_LUX),
                     false, observer, UserHandle.USER_ALL);
             cr.registerContentObserver(
                     Settings.System.getUriFor(Settings.System.AUTO_BRIGHTNESS_BACKLIGHT),
                     false, observer, UserHandle.USER_ALL);
-            cr.registerContentObserver(
-                    Settings.System.getUriFor(Settings.System.POWER_FADE_EFFECT),
-                    false, observer, UserHandle.USER_ALL);
 
             mLightSensorWarmUpTimeConfig = resources.getInteger(
                     com.android.internal.R.integer.config_lightSensorWarmupTime);
             updateAutomaticBrightnessSettings();
         }
-
-        mElectronBeamFadesConfig = Settings.System.getBoolean(mContext.getContentResolver(), 
-                    Settings.System.POWER_FADE_EFFECT, false);
+        cr.registerContentObserver(
+                Settings.System.getUriFor(Settings.System.POWER_FADE_EFFECT),
+                false, observer, UserHandle.USER_ALL);
+        cr.registerContentObserver(
+        		Settings.System.getUriFor(Settings.System.LOCKSCREEN_SEE_THROUGH),
+        		false, observer, UserHandle.USER_ALL);
+        cr.registerContentObserver(
+        		Settings.System.getUriFor(Settings.System.LOCKSCREEN_BLUR_BACKGROUND),
+        		false, observer, UserHandle.USER_ALL);
+        
+        updateSettings();
 
         if (!DEBUG_PRETEND_PROXIMITY_SENSOR_ABSENT) {
             mProximitySensor = mSensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
@@ -442,6 +456,21 @@ final class DisplayPowerController {
         }
     }
 
+    private void updateSettings() {
+        mElectronBeamFadesConfig = Settings.System.getBoolean(mContext.getContentResolver(), 
+                Settings.System.POWER_FADE_EFFECT, false);
+        mTakeScreenshot = Settings.System.getInt(mContext.getContentResolver(), 
+        		Settings.System.LOCKSCREEN_SEE_THROUGH, 0) == 1 &&
+        		Settings.System.getInt(mContext.getContentResolver(), 
+        				Settings.System.LOCKSCREEN_BLUR_BACKGROUND, 0) == 1;
+        if (mUseSoftwareAutoBrightnessConfig){
+            // As both LUX and BACKLIGHT might be changed at the same time, there's
+            // a potential race condition. As the settings provider API doesn't give
+            // us transactions to avoid them, wait a little until things settle down
+            mHandler.removeMessages(MSG_UPDATE_BACKLIGHT_SETTINGS);
+            mHandler.sendEmptyMessageDelayed(MSG_UPDATE_BACKLIGHT_SETTINGS, 1000);
+        }
+    }
     private void updateAutomaticBrightnessSettings() {
         int[] lux = getIntArrayForSetting(Settings.System.AUTO_BRIGHTNESS_LUX);
         int[] values = getIntArrayForSetting(Settings.System.AUTO_BRIGHTNESS_BACKLIGHT);
@@ -583,9 +612,34 @@ final class DisplayPowerController {
 
             if (changed && !mPendingRequestChangedLocked) {
                 mPendingRequestChangedLocked = true;
+                if(mTakeScreenshot && !mKeyguardManager.isKeyguardLocked() && request.screenState == DisplayPowerRequest.SCREEN_STATE_OFF){
+                    Bitmap bmp = null;
+                	float navbarHeight = mContext.getResources().getDimensionPixelSize(com.android.internal.R.dimen.navigation_bar_height);
+                	int percent = Integer.parseInt(ExtendedPropertiesUtils.getProperty(
+                			"com.android.systemui.navbar.dpi", "100"));
+                	navbarHeight = navbarHeight * percent / 100f;
+                	Slog.e(TAG, "NavBar: " + navbarHeight + " Percent: " + percent);
+                    bmp = SurfaceControl.screenshot(mDisplayManager.getDisplayInfo(mDisplayManager.getDisplayIds()[0]).appWidth, mDisplayManager.getDisplayInfo(mDisplayManager.getDisplayIds()[0]).getNaturalHeight());
+                    if(bmp != null) {
+                   		Bitmap bmp2 = Bitmap.createBitmap(bmp, 0, 0, bmp.getWidth(), Math.round(bmp.getHeight() - navbarHeight));
+                       	try {                    
+                       		File f = new File("/data/screen.png");
+                       		f.setReadable(true, false);
+                           	FileOutputStream ostream = new FileOutputStream(f);               	
+                            bmp2.compress(CompressFormat.PNG, 100, ostream);
+                            ostream.close();
+                        } 
+                        catch (Exception e) {
+                           	Slog.e(TAG, "Screenshot failure!", e);
+                        }
+                        finally {
+                        	bmp.recycle();
+                        	bmp2.recycle();
+                        }
+                    }
+                }
                 sendUpdatePowerStateLocked();
             }
-
             return mDisplayReadyLocked;
         }
     }

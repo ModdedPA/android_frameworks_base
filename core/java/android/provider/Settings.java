@@ -2424,7 +2424,19 @@ public final class Settings {
          * @hide
          */
         public static final String LOCKSCREEN_BACKGROUND = "lockscreen_background";
-
+        
+        /**
+         * Blur Lockscreen background
+         * @hide
+         */
+        public static final String LOCKSCREEN_BLUR_BACKGROUND = "lockscreen_blur_background";
+        
+        /**
+         * Blur Radius
+         * @hide
+         */
+        public static final String LOCKSCREEN_BLUR_RADIUS = "lockscreen_blur_radius";
+        
         /**
          * Whether the lockscreen should be completely disabled.
          * @hide
