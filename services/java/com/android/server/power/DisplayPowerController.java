@@ -375,10 +375,6 @@ final class DisplayPowerController {
         mUseSoftwareAutoBrightnessConfig = resources.getBoolean(
                 com.android.internal.R.bool.config_automatic_brightness_available);
         if (mUseSoftwareAutoBrightnessConfig) {
-
-            final ContentResolver cr = mContext.getContentResolver();
-            final ContentObserver observer = new ContentObserver(mHandler) {
-
             int[] lux = resources.getIntArray(
                     com.android.internal.R.array.config_autoBrightnessLevels);
             int[] screenBrightness = resources.getIntArray(
@@ -393,21 +389,11 @@ final class DisplayPowerController {
                         + "which must be strictly increasing.  "
                         + "Auto-brightness will be disabled.");
                 mUseSoftwareAutoBrightnessConfig = false;
-
-                @Override
-                public void onChange(boolean selfChange, Uri uri) {
-                    mElectronBeamFadesConfig = Settings.System.getBoolean(mContext.getContentResolver(), 
-                            Settings.System.POWER_FADE_EFFECT, false);
-
             } else {
                 if (screenBrightness[0] < screenBrightnessMinimum) {
                     screenBrightnessMinimum = screenBrightness[0];
                 }
             }
-
-            cr.registerContentObserver(
-                    Settings.System.getUriFor(Settings.System.POWER_FADE_EFFECT),
-                    false, observer, UserHandle.USER_ALL);
 
             mLightSensorWarmUpTimeConfig = resources.getInteger(
                     com.android.internal.R.integer.config_lightSensorWarmupTime);
@@ -416,8 +402,8 @@ final class DisplayPowerController {
         mScreenBrightnessRangeMinimum = clampAbsoluteBrightness(screenBrightnessMinimum);
         mScreenBrightnessRangeMaximum = PowerManager.BRIGHTNESS_ON;
 
-        mElectronBeamFadesConfig = Settings.System.getBoolean(mContext.getContentResolver(), 
-                    Settings.System.POWER_FADE_EFFECT, false);
+        mElectronBeamFadesConfig = resources.getBoolean(
+                com.android.internal.R.bool.config_animateScreenLights);
 
         if (!DEBUG_PRETEND_PROXIMITY_SENSOR_ABSENT) {
             mProximitySensor = mSensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
