@@ -2416,6 +2416,22 @@ public final class Settings {
         public static final String EGG_MODE = "egg_mode";
 
         /**
+         * Whether to prevent loud volume levels when headset is first plugged in.
+         * @hide
+         */
+        public static final String SAFE_HEADSET_VOLUME = "safe_headset_volume";
+
+        /**
+         * Electronic beam animation mode
+         * 0 = off,
+         * 1 = always horizontal,
+         * 2 = always vertical,
+         * 3 = dependent on orientation
+         * @hide
+         */
+        public static final String SYSTEM_POWER_CRT_MODE = "system_power_crt_mode";
+
+        /**
          * Settings to backup. This is here so that it's in the same place as the settings
          * keys and easy to update.
          *
@@ -2805,6 +2821,7 @@ public final class Settings {
             MOVED_TO_GLOBAL.add(Settings.Global.USE_GOOGLE_MAIL);
             MOVED_TO_GLOBAL.add(Settings.Global.WEB_AUTOFILL_QUERY_URL);
             MOVED_TO_GLOBAL.add(Settings.Global.WIFI_COUNTRY_CODE);
+            MOVED_TO_GLOBAL.add(Settings.Global.WIFI_COUNTRY_CODE_USER);
             MOVED_TO_GLOBAL.add(Settings.Global.WIFI_FRAMEWORK_SCAN_INTERVAL_MS);
             MOVED_TO_GLOBAL.add(Settings.Global.WIFI_FREQUENCY_BAND);
             MOVED_TO_GLOBAL.add(Settings.Global.WIFI_IDLE_MS);
@@ -3241,6 +3258,12 @@ public final class Settings {
          */
         @Deprecated
         public static final String ADB_ENABLED = Global.ADB_ENABLED;
+
+        /**
+         * The TCP/IP port to run ADB on, or -1 for USB
+         * @hide
+         */
+        public static final String ADB_PORT = "adb_port";
 
         /**
          * Setting to allow mock locations and location provider status to be injected into the
@@ -4781,6 +4804,13 @@ public final class Settings {
          */
         public static final String BUGREPORT_IN_POWER_MENU = "bugreport_in_power_menu";
 
+         /**
+         * Whether to wake the display when plugging or unplugging the charger
+         *
+         * @hide
+         */
+        public static final String WAKE_WHEN_PLUGGED_OR_UNPLUGGED = "wake_when_plugged_or_unplugged";
+
         /**
          * Whether ADB is enabled.
          */
@@ -5233,6 +5263,12 @@ public final class Settings {
         * @hide
         */
        public static final String WIFI_COUNTRY_CODE = "wifi_country_code";
+
+        /**
+         * 802.11 country code in ISO 3166 format custom user value
+         * @hide
+         */
+        public static final String WIFI_COUNTRY_CODE_USER = "wifi_country_code_user";
 
        /**
         * The interval in milliseconds to issue wake up scans when wifi needs
@@ -5822,6 +5858,11 @@ public final class Settings {
         public static final String SHOW_PROCESSES = "show_processes";
 
         /**
+         * Control whether the process CPU info meter should be shown.
+         */
+        public static final String SHOW_CPU = "show_cpu";
+
+        /**
          * If 1, the activity manager will aggressively finish activities and
          * processes as soon as they are no longer needed.  If 0, the normal
          * extended lifetime is used.
@@ -5948,6 +5989,7 @@ public final class Settings {
         public static final String[] SETTINGS_TO_BACKUP = {
             BUGREPORT_IN_POWER_MENU,
             STAY_ON_WHILE_PLUGGED_IN,
+            WAKE_WHEN_PLUGGED_OR_UNPLUGGED,
             AUTO_TIME,
             AUTO_TIME_ZONE,
             POWER_SOUNDS_ENABLED,
