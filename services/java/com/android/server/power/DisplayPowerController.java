@@ -49,6 +49,7 @@ import android.util.Log;
 import android.util.Slog;
 import android.util.Spline;
 import android.util.TimeUtils;
+import android.view.DisplayInfo;
 import android.view.SurfaceControl;
 
 import com.android.internal.policy.impl.keyguard.KeyguardServiceWrapper;
@@ -544,10 +545,11 @@ final class DisplayPowerController {
             }
 
             if (changed && !mPendingRequestChangedLocked) {
-            	if (Settings.System.getInt(mContext.getContentResolver(), 
+            	if (!mKeyguardService.isShowing() && Settings.System.getInt(mContext.getContentResolver(), 
             			Settings.System.LOCKSCREEN_BLUR_BEHIND, 0) == 1 && 
             			request.screenState == DisplayPowerRequest.SCREEN_STATE_OFF) {
-                    Bitmap bmp = SurfaceControl.screenshot(768, 1280);
+            		DisplayInfo di = mDisplayManager.getDisplayInfo(mDisplayManager.getDisplayIds()[0]);
+                    Bitmap bmp = SurfaceControl.screenshot(di.getNaturalWidth(), di.getNaturalHeight());
                     if(bmp != null) {
                         mKeyguardService.setBackgroundBitmap(bmp);
                         bmp.recycle();
