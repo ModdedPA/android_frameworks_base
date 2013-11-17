@@ -135,8 +135,7 @@ public class KeyguardViewManager {
     	mBlurRadius = Settings.System.getInt(mContext.getContentResolver(),
     			Settings.System.LOCKSCREEN_BLUR_RADIUS, 12);
     	if(!mBlurEnabled) {
-    		maybeCreateKeyguardLocked(shouldEnableScreenRotation(), false, null);
-    		mKeyguardHost.setCustomBackground(null);
+    		mCustomBackground = null;
     	}
     }
     
