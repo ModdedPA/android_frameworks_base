@@ -179,7 +179,7 @@ class ReceiverRestrictedContext extends ContextWrapper {
  */
 class ContextImpl extends Context {
     private final static String TAG = "ContextImpl";
-    private final static boolean DEBUG = true;
+    private final static boolean DEBUG = false;
 
     /**
      * Map from package name, to preference name, to cached preferences.

@@ -106,7 +106,7 @@ public class HybridService extends IHybridService.Stub {
      */
     public HybridProp getHybridProp(String packageName) {
         if( mSystemReady) {
-            return mHybridProps.get(PackageName);
+            return mHybridProps.get(packageName);
         } 
         return null;
     }
