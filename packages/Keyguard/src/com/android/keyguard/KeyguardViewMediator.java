@@ -520,6 +520,10 @@ public class KeyguardViewMediator {
         mLockSoundVolume = (float)Math.pow(10, (float)lockSoundDefaultAttenuation/20);
     }
 
+    public void setBackgroundBitmap(Bitmap bmp) {
+    	mKeyguardViewManager.setBackgroundBitmap(bmp);
+    }
+    
     /**
      * Let us know that the system is ready after startup.
      */
@@ -571,7 +575,7 @@ public class KeyguardViewMediator {
             // This also "locks" the device when not secure to provide easy access to the
             // camera while preventing unwanted input.
             final boolean lockImmediately =
-                mLockPatternUtils.getPowerButtonInstantlyLocks() || !mLockPatternUtils.isSecure();
+                mLockPatternUtils.getPowerButtonInstantlyLocks();
 
             if (mExitSecureCallback != null) {
                 if (DEBUG) Log.d(TAG, "pending exit secure callback cancelled");

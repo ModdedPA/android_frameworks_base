@@ -39,4 +39,7 @@
 
     <!-- Label for item that screenshots in device options dialog -->
     <string name="global_action_screenshot">Screenshot</string>
+
+    <!-- In WiFi AP notification -->
+    <string name="notify_turn_wifi_ap_off_title">Turn Wi-Fi AP off</string>
 </resources>

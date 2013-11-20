@@ -29,4 +29,7 @@
   <java-symbol type="string" name="global_action_screenshot" />
   <java-symbol type="string" name="reboot_confirm" />
   <java-symbol type="string" name="reboot_progress" />
+
+  <!-- In WiFi AP notification -->
+  <java-symbol type="string" name="notify_turn_wifi_ap_off_title" />
 </resources>

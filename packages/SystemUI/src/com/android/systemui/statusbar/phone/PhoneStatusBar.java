@@ -64,6 +64,7 @@ import android.os.RemoteException;
 import android.os.SystemClock;
 import android.os.UserHandle;
 import android.provider.Settings;
+import android.provider.AlarmClock;
 import android.service.notification.StatusBarNotification;
 import android.util.DisplayMetrics;
 import android.util.EventLog;
@@ -243,6 +244,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode {
 
     // the date view
     DateView mDateView;
+    View mClockView;
 
     // for heads up notifications
     private HeadsUpNotificationView mHeadsUpNotificationView;
@@ -488,15 +490,20 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode {
         mClearButton.setVisibility(View.INVISIBLE);
         mClearButton.setEnabled(false);
         mDateView = (DateView)mStatusBarWindow.findViewById(R.id.date);
+        if (mDateView != null) {
+            mDateView.setOnClickListener(mCalendarClickListener);
+            mDateView.setEnabled(true);
+        }
+        mClockView = mNotificationPanelHeader.findViewById(R.id.clock);
+        if (mClockView != null) {
+            mClockView.setOnClickListener(mClockClickListener);
+            mClockView.setEnabled(true);
+        }
 
         mHasSettingsPanel = res.getBoolean(R.bool.config_hasSettingsPanel);
         mHasFlipSettings = res.getBoolean(R.bool.config_hasFlipSettingsPanel);
 
         mDateTimeView = mNotificationPanelHeader.findViewById(R.id.datetime);
-        if (mDateTimeView != null) {
-            mDateTimeView.setOnClickListener(mClockClickListener);
-            mDateTimeView.setEnabled(true);
-        }
 
         mSettingsButton = (ImageView) mStatusBarWindow.findViewById(R.id.settings_button);
         if (mSettingsButton != null) {
@@ -2452,7 +2459,13 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode {
     private View.OnClickListener mClockClickListener = new View.OnClickListener() {
         public void onClick(View v) {
             startActivityDismissingKeyguard(
-                    new Intent(Intent.ACTION_QUICK_CLOCK), true); // have fun, everyone
+                    new Intent(AlarmClock.ACTION_SHOW_ALARMS), true); // have fun, everyone
+        }
+    };
+    private View.OnClickListener mCalendarClickListener = new View.OnClickListener() {
+        public void onClick(View v) {
+            Intent intent=Intent.makeMainSelectorActivity(Intent.ACTION_MAIN, Intent.CATEGORY_APP_CALENDAR);
+            startActivityDismissingKeyguard(intent,true);
         }
     };
 
