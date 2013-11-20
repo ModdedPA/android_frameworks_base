@@ -257,7 +257,7 @@ public class ActionTarget {
             if (!homePackage.equals(packageName)) {
                 am.forceStopPackage(packageName);
                 Toast.makeText(mContext,
-                        com.android.internal.R.string.app_killed_message,
+                        R.string.app_killed_message,
                         Toast.LENGTH_SHORT).show();
             }
         }
