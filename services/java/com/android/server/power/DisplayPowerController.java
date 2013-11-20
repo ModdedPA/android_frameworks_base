@@ -545,7 +545,7 @@ final class DisplayPowerController {
             }
 
             if (changed && !mPendingRequestChangedLocked) {
-            	if (!mKeyguardService.isShowing() && Settings.System.getInt(mContext.getContentResolver(), 
+            	if ((mKeyguardService == null || !mKeyguardService.isShowing()) && Settings.System.getInt(mContext.getContentResolver(), 
             			Settings.System.LOCKSCREEN_BLUR_BEHIND, 0) == 1 && 
             			request.screenState == DisplayPowerRequest.SCREEN_STATE_OFF) {
             		DisplayInfo di = mDisplayManager.getDisplayInfo(mDisplayManager.getDisplayIds()[0]);
