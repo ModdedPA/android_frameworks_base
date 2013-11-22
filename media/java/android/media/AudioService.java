@@ -3755,7 +3755,7 @@ public class AudioService extends IAudioService.Stub {
                     Settings.Global.DOCK_AUDIO_MEDIA_ENABLED))) {
                     readDockAudioSettings(mContentResolver);
                 } else if (uri.equals(Settings.System.getUriFor(
-                    Settings.System.VOLUME_LINK_NOTIFICATION) {
+                    Settings.System.VOLUME_LINK_NOTIFICATION))) {
                     mLinkNotificationWithVolume = Settings.System.getIntForUser(mContentResolver,
                             Settings.System.VOLUME_LINK_NOTIFICATION, 1, UserHandle.USER_CURRENT) == 1;
                     if (mLinkNotificationWithVolume) {
