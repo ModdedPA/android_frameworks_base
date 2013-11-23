@@ -587,89 +587,6 @@ class QuickSettings {
                             startSettingsActivity(Intent.ACTION_POWER_USAGE_SUMMARY);
                         }
                     });
-            parent.addView(rotationLockTile);
-        }
-
-        // Battery
-        mBatteryTile = (QuickSettingsTileView)
-                inflater.inflate(R.layout.quick_settings_tile, parent, false);
-        mBatteryTile.setContent(R.layout.quick_settings_tile_battery, inflater);
-        mBattery = (BatteryMeterView) mBatteryTile.findViewById(R.id.image);
-        mBattery.setVisibility(View.GONE);
-        mCircleBattery = (BatteryCircleMeterView) mBatteryTile.findViewById(R.id.circle_battery);
-        updateBattery();
-        mBatteryTile.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startSettingsActivity(Intent.ACTION_POWER_USAGE_SUMMARY);
-            }
-        });
-        mModel.addBatteryTile(mBatteryTile, new QuickSettingsModel.RefreshCallback() {
-            @Override
-            public void refreshView(QuickSettingsTileView unused, State state) {
-                QuickSettingsModel.BatteryState batteryState =
-                        (QuickSettingsModel.BatteryState) state;
-                String t;
-                if (batteryState.batteryLevel == 100) {
-                    t = mContext.getString(R.string.quick_settings_battery_charged_label);
-                } else {
-                    if (!mBatteryHasPercent) {
-                        t = batteryState.pluggedIn
-                            ? mContext.getString(R.string.quick_settings_battery_charging_label,
-                                    batteryState.batteryLevel)
-                            : mContext.getString(R.string.status_bar_settings_battery_meter_format,
-                                    batteryState.batteryLevel);
-                    } else {
-                        t = batteryState.pluggedIn
-                            ? mContext.getString(R.string.quick_settings_battery_charging)
-                            : mContext.getString(R.string.quick_settings_battery_discharging);
-                    }
-                }
-                ((TextView)mBatteryTile.findViewById(R.id.text)).setText(t);
-                mBatteryTile.setContentDescription(
-                        mContext.getString(R.string.accessibility_quick_settings_battery, t));
-            }
-        });
-        parent.addView(mBatteryTile);
-
-        // Airplane Mode
-        final QuickSettingsBasicTile airplaneTile
-                = new QuickSettingsBasicTile(mContext);
-        mModel.addAirplaneModeTile(airplaneTile, new QuickSettingsModel.RefreshCallback() {
-            @Override
-            public void refreshView(QuickSettingsTileView unused, State state) {
-                airplaneTile.setImageResource(state.iconId);
-
-                String airplaneState = mContext.getString(
-                        (state.enabled) ? R.string.accessibility_desc_on
-                                : R.string.accessibility_desc_off);
-                airplaneTile.setContentDescription(
-                        mContext.getString(R.string.accessibility_quick_settings_airplane, airplaneState));
-                airplaneTile.setText(state.label);
-            }
-        });
-        parent.addView(airplaneTile);
-
-        // Bluetooth
-        if (mModel.deviceSupportsBluetooth()
-                || DEBUG_GONE_TILES) {
-            final QuickSettingsBasicTile bluetoothTile
-                    = new QuickSettingsBasicTile(mContext);
-            bluetoothTile.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    startSettingsActivity(android.provider.Settings.ACTION_BLUETOOTH_SETTINGS);
-                }
-            });
-            if (LONG_PRESS_TOGGLES) {
-                bluetoothTile.setOnLongClickListener(new View.OnLongClickListener() {
-                    @Override
-                    public boolean onLongClick(View v) {
-                        if (mBluetoothAdapter.isEnabled()) {
-                            mBluetoothAdapter.disable();
-                        } else {
-                            mBluetoothAdapter.enable();
-=======
                     mModel.addBatteryTile(batteryTile, new QuickSettingsModel.RefreshCallback() {
                         @Override
                         public void refreshView(QuickSettingsTileView unused, State state) {
@@ -692,7 +609,6 @@ class QuickSettings {
                             batteryTile.setContentDescription(
                                     mContext.getString(
                                             R.string.accessibility_quick_settings_battery, t));
->>>>>>> c5d8b7e78c3e463897bc2cd2bb3ebe152e9b8a49
                         }
                     });
                     parent.addView(batteryTile);
