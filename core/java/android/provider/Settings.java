@@ -2677,7 +2677,6 @@ public final class Settings {
         public static final String QUICK_SETTINGS_TILES = "quick_settings_tiles";
 
         /**
-
          * Setting to show the battery percentage text
          * @hide
          */
