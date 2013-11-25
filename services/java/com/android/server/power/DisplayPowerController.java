@@ -545,18 +545,19 @@ final class DisplayPowerController {
             }
 
             if (changed && !mPendingRequestChangedLocked) {
-            	if ((mKeyguardService == null || !mKeyguardService.isShowing()) && Settings.System.getInt(mContext.getContentResolver(), 
+            	Bitmap bmp = null;
+                if ((mKeyguardService == null || !mKeyguardService.isShowing()) && Settings.System.getInt(mContext.getContentResolver(), 
             			Settings.System.LOCKSCREEN_BLUR_BEHIND, 0) == 1 && 
             			request.screenState == DisplayPowerRequest.SCREEN_STATE_OFF) {
             		DisplayInfo di = mDisplayManager.getDisplayInfo(mDisplayManager.getDisplayIds()[0]);
-                    Bitmap bmp = SurfaceControl.screenshot(di.getNaturalWidth(), di.getNaturalHeight());
-                    if(bmp != null) {
-                        mKeyguardService.setBackgroundBitmap(bmp);
-                        bmp.recycle();
-                    }
+                    bmp = SurfaceControl.screenshot(di.getNaturalWidth(), di.getNaturalHeight());
             	}
                 mPendingRequestChangedLocked = true;
                 sendUpdatePowerStateLocked();
+                if(mKeyguardService != null && bmp != null) {
+                    mKeyguardService.setBackgroundBitmap(bmp);
+                    bmp.recycle();
+                }
             }
 
             return mDisplayReadyLocked;
