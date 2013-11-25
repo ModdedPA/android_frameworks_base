@@ -1,6 +1,5 @@
 /*
  * Copyright (C) 2012 The Android Open Source Project
- * This code has been modified. Portions copyright (C) 2013, ParanoidAndroid Project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,19 +17,14 @@
 package com.android.systemui.statusbar.phone;
 
 import android.animation.LayoutTransition;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.res.Resources;
-import android.provider.Settings;
-import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 import com.android.systemui.R;
-
-import java.util.ArrayList;
 
 /**
  *
@@ -43,9 +37,6 @@ class QuickSettingsContainerView extends FrameLayout {
     // The gap between tiles in the QuickSettings grid
     private float mCellGap;
 
-    // Default layout transition
-    private LayoutTransition mLayoutTransition;
-
     public QuickSettingsContainerView(Context context, AttributeSet attrs) {
         super(context, attrs);
 
@@ -56,8 +47,8 @@ class QuickSettingsContainerView extends FrameLayout {
     protected void onFinishInflate() {
         super.onFinishInflate();
 
-        mLayoutTransition = getLayoutTransition();
-        mLayoutTransition.enableTransitionType(LayoutTransition.CHANGING);
+        // TODO: Setup the layout transitions
+        LayoutTransition transitions = getLayoutTransition();
     }
 
     void updateResources() {
@@ -156,38 +147,6 @@ class QuickSettingsContainerView extends FrameLayout {
                     x = getPaddingStart();
                     y += childHeight + mCellGap;
                 }
-            }
-        }
-    }
-
-    public void enableLayoutTransitions() {
-        setLayoutTransition(mLayoutTransition);
-    }
-
-    public void setEditModeEnabled(boolean enabled) {
-        ArrayList<String> tiles = new ArrayList<String>();
-        for(int i = 0; i < getChildCount(); i++) {
-            View v = getChildAt(i);
-            if(v instanceof QuickSettingsTileView) {
-                QuickSettingsTileView qs = (QuickSettingsTileView) v;
-                qs.setEditMode(enabled);
-
-                // Add to provider string
-                if(!enabled && qs.getVisibility() == View.VISIBLE) {
-                    tiles.add(qs.getTileId().toString());
-                }
-            }
-        }
-
-        if(!enabled) { // Store modifications
-            ContentResolver resolver = getContext().getContentResolver();
-            if(!tiles.isEmpty()) {
-                Settings.System.putString(resolver,
-                        Settings.System.QUICK_SETTINGS_TILES,
-                                TextUtils.join(QuickSettings.DELIMITER, tiles));
-            } else { // No tiles
-                Settings.System.putString(resolver,
-                        Settings.System.QUICK_SETTINGS_TILES, QuickSettings.NO_TILES);
             }
         }
     }
