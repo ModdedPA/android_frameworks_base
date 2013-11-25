@@ -334,7 +334,6 @@ class QuickSettings {
         collapsePanels();
     }
 
-
     public void updateBattery() {
         if (mBattery == null || mCircleBattery == null || mModel == null) {
             return;
