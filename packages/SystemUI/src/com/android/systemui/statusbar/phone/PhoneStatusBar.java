@@ -708,14 +708,6 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode {
                 }
             }
 
-            // Quicksettings date/time
-            View qsDateTimeView = mSettingsPanel.findViewById(R.id.datetime);
-
-            if (qsDateTimeView != null) {
-                qsDateTimeView.setOnClickListener(mClockClickListener);
-                qsDateTimeView.setEnabled(true);
-            }
-
             // wherever you find it, Quick Settings needs a container to survive
             mSettingsContainer = (QuickSettingsContainerView)
                     mStatusBarWindow.findViewById(R.id.quick_settings_container);
