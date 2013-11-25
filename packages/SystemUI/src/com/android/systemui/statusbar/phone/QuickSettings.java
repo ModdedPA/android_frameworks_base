@@ -558,7 +558,7 @@ class QuickSettings {
                                         QuickSettingsModel.RotationLockState rotationLockState =
                                                 (QuickSettingsModel.RotationLockState) state;
                                         // can't show/hide view, so just enable/disable
-                                        view.setEnabled(rotationLockState.visible);
+                                        //view.setEnabled(rotationLockState.visible);
                                         if (state.iconId != 0) {
                                             // needed to flush any cached IDs
                                             rotationLockTile.setImageDrawable(null);
