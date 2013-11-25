@@ -2281,6 +2281,12 @@ public final class Settings {
          */
         public static final String TTY_MODE = "tty_mode";
 
+       /**
+         * Whether lid wakes the device
+         * @hide
+         */
+        public static final String LOCKSCREEN_LID_WAKE = "lockscreen_lid_wake";
+
         /**
          * Whether the sounds effects (key clicks, lid open ...) are enabled. The value is
          * boolean (1 or 0).
