@@ -2726,7 +2726,9 @@ public final class Settings {
         /*
          * Immersive mode global actions switch
          * 0 = no
-         * 1 = yes
+         * 1 = hide statusbar and navigation bar
+         * 2 = only hide navigation bar
+         * 3 = only hide status bar
          * @hide
          */
         public static final String IMMERSIVE_MODE = "immersive_mode";
