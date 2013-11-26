@@ -394,12 +394,16 @@ public abstract class BaseStatusBar extends SystemUI implements
                 WindowManager.LayoutParams params = mHalo.getWMParams();
                 mWindowManager.addView(mHalo,params);
                 mHalo.setStatusBar(this);
+                
+                Settings.System.putInt(mContext.getContentResolver(), Settings.System.IMMERSIVE_MODE, 3);
             }
         } else {
             if (mHalo != null) {
                 mHalo.cleanUp();
                 mWindowManager.removeView(mHalo);
                 mHalo = null;
+                
+                Settings.System.putInt(mContext.getContentResolver(), Settings.System.IMMERSIVE_MODE, 0);
             }
         }
     }
